@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Library Management System</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header class="app-header">
+    <div class="header-container">
+      <div class="brand-block" onclick="navigateTo('hero')">
+        <span class="brand-monogram">LMS</span>
+        <div class="brand-text">
+          <span class="brand-title">CENTRAL LIBRARY</span>
+          <span class="brand-sub">MongoDB Database System</span>
+        </div>
+      </div>
+
+      <nav class="nav-links" id="main-nav">
+        <button class="nav-btn active" data-target="hero" onclick="navigateTo('hero')">Home</button>
+        <button class="nav-btn auth-nav" data-target="catalog" onclick="navigateTo('catalog')" style="display:none;">Issue Books</button>
+        <button class="nav-btn user-only" data-target="student-dash" onclick="navigateTo('student-dash')" style="display:none;">Dashboard</button>
+        <button class="nav-btn user-only" data-target="request" onclick="navigateTo('request')" style="display:none;">Request Book</button>
+        <button class="nav-btn lib-only" data-target="librarian-dash" onclick="navigateTo('librarian-dash')" style="display:none;">Librarian Dashboard</button>
+        <button class="nav-btn lib-only" data-target="librarian-lookup" onclick="navigateTo('librarian-lookup')" style="display:none;">Student Lookup</button>
+        <button class="nav-btn lib-only" data-target="librarian-requests" onclick="navigateTo('librarian-requests')" style="display:none;">Manage Requests</button>
+      </nav>
+
+      <div class="header-auth" id="header-auth">
+        <button class="btn btn-outline" id="nav-login-btn" onclick="navigateTo('auth')">Log In / Sign Up</button>
+        <div class="user-pill" id="user-pill" style="display: none;">
+          <div class="user-meta">
+            <span class="user-name" id="pill-user-name">Patron Name</span>
+            <span class="user-role-badge" id="pill-user-role">Student</span>
+          </div>
+          <button class="btn btn-sm btn-ghost" onclick="handleLogout()">Logout</button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Toast Notification Bar -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- MAIN APP CONTAINER -->
+  <main class="app-main">
+
+    <!-- 1. HERO SECTION -->
+    <section id="hero-section" class="page-section active">
+      <div class="hero-wrapper">
+        <div class="hero-badge">MONGODB REPLICA SET [RS0] // TRANSACTION ENGINE</div>
+        <h1 class="hero-title">Academic Library Information & Circulation System</h1>
+        <p class="hero-lead">
+          A high-performance DBMS frontend providing real-time catalog discovery, ACID loan execution, fine ledger management, and procurement workflows.
+        </p>
+
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="navigateTo('auth')">Log In / Sign Up</button>
+        </div>
+
+        <div class="hero-feature-grid">
+          <div class="feature-card">
+            <div class="feature-header">
+              <span class="feature-tag orange-tag">CIRCL-01</span>
+              <h3>Atomic Book Issuance</h3>
+            </div>
+            <p>Direct multi-document ACID transactions ensuring synchronized inventory deduction, barcode assignment, and patron loan tracking.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-header">
+              <span class="feature-tag green-tag">FIN-02</span>
+              <h3>Transparent Fine Ledger</h3>
+            </div>
+            <p>Automated daily overdue assessments, instantaneous online student settlements, and verified librarian waiver authorizations.</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-header">
+              <span class="feature-tag white-tag">REQ-03</span>
+              <h3>Procurement Pipelines</h3>
+            </div>
+            <p>End-to-end requisition queue for faculty and students with real-time editorial reviews, approvals, and acquisition logging.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. AUTHENTICATION SECTION (LOGIN / SIGN UP) -->
+    <section id="auth-section" class="page-section">
+      <div class="auth-card-container">
+        <div class="auth-box">
+          <div class="auth-tabs">
+            <button class="auth-tab active" id="tab-login" onclick="switchAuthTab('login')">Log In</button>
+            <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">Sign Up</button>
+          </div>
+
+          <!-- LOGIN FORM -->
+          <form id="form-login" class="auth-form" onsubmit="handleLoginSubmit(event)">
+            <h2 class="form-title">Log In</h2>
+            <p class="form-sub">Choose your user type and enter your credentials.</p>
+
+            <div class="form-group">
+              <label for="login-role">User Type *</label>
+              <select id="login-role" class="form-control" required>
+                <option value="" disabled selected>Select User Type</option>
+                <option value="student">Student</option>
+                <option value="faculty">Faculty</option>
+                <option value="librarian">Librarian</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="login-id">Registration Number / User ID / Email *</label>
+              <input type="text" id="login-id" class="form-control" placeholder="e.g. 24BDS0245, USR-FAC-101, or LIB-001" required>
+            </div>
+
+            <div class="form-group">
+              <label for="login-password">Password *</label>
+              <input type="password" id="login-password" class="form-control" placeholder="Enter your password" required>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="btn-login-submit">
+              Log In
+            </button>
+          </form>
+
+          <!-- SIGN UP FORM -->
+          <form id="form-signup" class="auth-form" style="display:none;" onsubmit="handleSignupSubmit(event)">
+            <h2 class="form-title">Sign Up</h2>
+            <p class="form-sub">Create your library member account.</p>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signup-role">User Type *</label>
+                <select id="signup-role" class="form-control" required>
+                  <option value="" disabled selected>Select User Type</option>
+                  <option value="student">Student (Quota: 5 Books)</option>
+                  <option value="faculty">Faculty (Quota: 10 Books)</option>
+                  <option value="librarian">Librarian (Quota: 15 Books)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="signup-reg">Registration No / User ID *</label>
+                <input type="text" id="signup-reg" class="form-control" placeholder="e.g. 24BDS0999" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signup-name">Full Name *</label>
+                <input type="text" id="signup-name" class="form-control" placeholder="e.g. Maya Lin" required>
+              </div>
+
+              <div class="form-group">
+                <label for="signup-email">University Email *</label>
+                <input type="email" id="signup-email" class="form-control" placeholder="e.g. maya.lin@vitstudent.ac.in" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signup-password">Password *</label>
+                <input type="password" id="signup-password" class="form-control" placeholder="Create a password" required minlength="4">
+              </div>
+
+              <div class="form-group">
+                <label for="signup-dept">Academic Department</label>
+                <input type="text" id="signup-dept" class="form-control" placeholder="e.g. Data Science">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="signup-phone">Phone Number</label>
+                <input type="text" id="signup-phone" class="form-control" placeholder="+91-9876543210">
+              </div>
+
+              <div class="form-group">
+                <label for="signup-street">Campus Street / Hostel Address</label>
+                <input type="text" id="signup-street" class="form-control" placeholder="Block D, Room 410">
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-secondary btn-block" id="btn-signup-submit">
+              Sign Up
+            </button>
+          </form>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. STUDENT & FACULTY DASHBOARD -->
+    <section id="student-dashboard-section" class="page-section">
+      <div class="section-header">
+        <div>
+          <span class="sub-heading" id="dash-patron-role">STUDENT DASHBOARD</span>
+          <h2 class="section-title" id="dash-patron-name">Patron Overview</h2>
+          <span class="user-subid" id="dash-patron-id">ID: 24BDS0245</span>
+        </div>
+        <div class="header-action-group">
+          <button class="btn btn-outline" onclick="loadStudentDashboard()">Refresh Status</button>
+          <button class="btn btn-primary" onclick="navigateTo('catalog')">Issue More Books</button>
+        </div>
+      </div>
+
+      <!-- Top 3 Metrics -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <span class="metric-label">Books Issued</span>
+          <span class="metric-value green-text" id="stat-books-issued">0</span>
+          <span class="metric-sub" id="stat-max-allowed">Maximum Quota: 5 books</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Available to Issue</span>
+          <span class="metric-value white-text" id="stat-can-issue">0</span>
+          <span class="metric-sub">Remaining slots for immediate checkout</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Total Amount of Fine</span>
+          <span class="metric-value orange-text" id="stat-total-fine">₹ 0</span>
+          <span class="metric-sub">Accumulated overdue penalty</span>
+        </div>
+      </div>
+
+      <!-- Issued Books List -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <h3 class="panel-title">Currently Issued Books</h3>
+          <span class="panel-sub" id="issued-books-count-label">0 records found</span>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="table-issued-books">
+            <thead>
+              <tr>
+                <th>Book Title</th>
+                <th>ISBN</th>
+                <th>Copy Barcode</th>
+                <th>Issued Date</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Fine Accrued</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-issued-books">
+              <tr>
+                <td colspan="8" class="empty-state">No books currently issued. Browse the catalog to issue.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. ISSUE BOOKS / CATALOG SECTION -->
+    <section id="catalog-section" class="page-section">
+      <div class="section-header">
+        <div>
+          <span class="sub-heading">CATALOG INVENTORY</span>
+          <h2 class="section-title">Issue Books</h2>
+          <span class="user-subid">Filter by metadata, sort, and checkout available copies</span>
+        </div>
+      </div>
+
+      <!-- Filter Controls -->
+      <div class="filter-panel">
+        <div class="filter-row">
+          <div class="filter-field grow-2">
+            <label for="filter-search">Search by Title / Keyword</label>
+            <input type="text" id="filter-search" class="form-control" placeholder="e.g. Database, Algorithms, Clean Code..." oninput="handleCatalogFilter()">
+          </div>
+
+          <div class="filter-field">
+            <label for="filter-author">Author</label>
+            <input type="text" id="filter-author" class="form-control" placeholder="e.g. Silberschatz" oninput="handleCatalogFilter()">
+          </div>
+
+          <div class="filter-field">
+            <label for="filter-publisher">Publisher</label>
+            <input type="text" id="filter-publisher" class="form-control" placeholder="e.g. McGraw-Hill" oninput="handleCatalogFilter()">
+          </div>
+
+          <div class="filter-field">
+            <label for="filter-isbn">ISBN</label>
+            <input type="text" id="filter-isbn" class="form-control" placeholder="e.g. 978-..." oninput="handleCatalogFilter()">
+          </div>
+        </div>
+
+        <div class="filter-row sub-row">
+          <div class="filter-field">
+            <label for="filter-sort">Sort Order</label>
+            <select id="filter-sort" class="form-control" onchange="handleCatalogFilter()">
+              <option value="name_asc">Name: A to Z</option>
+              <option value="name_desc">Name: Z to A</option>
+              <option value="available">Availability (High to Low)</option>
+            </select>
+          </div>
+
+          <div class="filter-checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="filter-available-only" onchange="handleCatalogFilter()">
+              <span>Show Available Copies Only</span>
+            </label>
+          </div>
+
+          <div class="filter-actions">
+            <button class="btn btn-sm btn-ghost" onclick="resetCatalogFilters()">Reset Filters</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Books List Container -->
+      <div class="catalog-list-wrapper">
+        <div class="catalog-list-header">
+          <span id="catalog-count-label">Loading catalog...</span>
+        </div>
+        <div class="books-list" id="books-list-container">
+          <!-- Populated dynamically via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. REQUEST SECTION -->
+    <section id="request-section" class="page-section">
+      <div class="section-header">
+        <div>
+          <span class="sub-heading">PATRON REQUISITIONS</span>
+          <h2 class="section-title">Request a Book</h2>
+          <span class="user-subid">Submit procurement, hold, or reservation requests directly to the library database</span>
+        </div>
+      </div>
+
+      <div class="request-layout">
+        <!-- Requisition Form -->
+        <div class="panel-box request-form-panel">
+          <h3 class="panel-title">New Book Requisition Form</h3>
+          <p class="panel-sub">Enter all bibliographic details for automated acquisition processing.</p>
+
+          <form id="form-request-book" onsubmit="handleBookRequestSubmit(event)">
+            <div class="form-row">
+              <div class="form-group grow-2">
+                <label for="req-title">Book Title *</label>
+                <input type="text" id="req-title" class="form-control" placeholder="e.g. Designing Data-Intensive Applications" required>
+              </div>
+
+              <div class="form-group">
+                <label for="req-author">Author *</label>
+                <input type="text" id="req-author" class="form-control" placeholder="e.g. Martin Kleppmann" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="req-isbn">ISBN</label>
+                <input type="text" id="req-isbn" class="form-control" placeholder="e.g. 978-1449373320">
+              </div>
+
+              <div class="form-group">
+                <label for="req-publisher">Publisher</label>
+                <input type="text" id="req-publisher" class="form-control" placeholder="e.g. O'Reilly Media">
+              </div>
+
+              <div class="form-group">
+                <label for="req-year">Publication Year</label>
+                <input type="number" id="req-year" class="form-control" placeholder="e.g. 2017" min="1900" max="2099">
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="req-version">Version / Edition</label>
+                <input type="text" id="req-version" class="form-control" placeholder="e.g. 1st Edition">
+              </div>
+
+              <div class="form-group">
+                <label for="req-type">Request Type *</label>
+                <select id="req-type" class="form-control" required>
+                  <option value="procurement">Procurement (New Title Purchase)</option>
+                  <option value="hold">Hold (Hold On Available/Circulated Copy)</option>
+                  <option value="reservation">Reservation (Advance Reservation)</option>
+                  <option value="renewal">Renewal Request</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="req-priority">Urgency Priority</label>
+                <select id="req-priority" class="form-control">
+                  <option value="medium">Medium</option>
+                  <option value="high">High (Coursework / Exam)</option>
+                  <option value="low">Low (General Interest)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="req-notes">Additional Notes / Relevant Info</label>
+              <textarea id="req-notes" class="form-control textarea" rows="3" placeholder="Provide course codes, syllabus references, or specific library shelf requirements..."></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary" id="btn-submit-request">
+              Submit Request
+            </button>
+          </form>
+        </div>
+
+        <!-- My Submitted Requests Table -->
+        <div class="panel-box request-history-panel">
+          <div class="panel-header">
+            <h3 class="panel-title">My Submitted Requests</h3>
+            <span class="panel-sub" id="my-requests-count-label">0 records</span>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table" id="table-my-requests">
+              <thead>
+                <tr>
+                  <th>Request ID</th>
+                  <th>Title & Author</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-my-requests">
+                <tr>
+                  <td colspan="5" class="empty-state">No requests submitted yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 6. LIBRARIAN DASHBOARD & CIRCULATION LOGS -->
+    <section id="librarian-dash-section" class="page-section">
+      <div class="section-header">
+        <div>
+          <span class="sub-heading">STAFF ADMINISTRATION</span>
+          <h2 class="section-title">Librarian Operations Console</h2>
+          <span class="user-subid">Campus circulation statistics and audit log of book checkouts and returns</span>
+        </div>
+        <div class="header-action-group">
+          <button class="btn btn-outline" onclick="loadLibrarianDashboard()">Refresh Logs</button>
+          <button class="btn btn-secondary" onclick="navigateTo('librarian-lookup')">Student Lookup & Fines</button>
+          <button class="btn btn-primary" onclick="navigateTo('librarian-requests')">Review Requests</button>
+        </div>
+      </div>
+
+      <!-- Top Metric Cards Required: Total books issued & Total amount of fines yet to be paid off -->
+      <div class="metric-grid">
+        <div class="metric-card">
+          <span class="metric-label">Total Books Issued</span>
+          <span class="metric-value green-text" id="lib-stat-issued">0</span>
+          <span class="metric-sub">Active loans currently in circulation across campus</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Total Outstanding Fines</span>
+          <span class="metric-value orange-text" id="lib-stat-fines">₹ 0</span>
+          <span class="metric-sub">Unpaid penalties pending across all patrons</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Catalog Titles</span>
+          <span class="metric-value white-text" id="lib-stat-books">0</span>
+          <span class="metric-sub">Distinct book records in collection</span>
+        </div>
+
+        <div class="metric-card">
+          <span class="metric-label">Active Members</span>
+          <span class="metric-value white-text" id="lib-stat-members">0</span>
+          <span class="metric-sub">Registered students and faculty</span>
+        </div>
+      </div>
+
+      <!-- Log of Books Issued or Returned -->
+      <div class="panel-box">
+        <div class="panel-header">
+          <div>
+            <h3 class="panel-title">Circulation Log: Books Issued & Returned</h3>
+            <span class="panel-sub">Real-time audit stream of borrow transactions stored in borrow_transactions collection</span>
+          </div>
+          <div class="table-filter-input">
+            <input type="text" id="log-search-input" class="form-control form-control-sm" placeholder="Filter log by student or title..." oninput="handleLogSearch()">
+          </div>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="table-circulation-logs">
+            <thead>
+              <tr>
+                <th>Txn ID</th>
+                <th>Patron Name & Reg No</th>
+                <th>Role</th>
+                <th>Book Title</th>
+                <th>Barcode</th>
+                <th>Issued Date</th>
+                <th>Due Date</th>
+                <th>Return Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-circulation-logs">
+              <tr>
+                <td colspan="10" class="empty-state">Loading circulation logs...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- 7. LIBRARIAN STUDENT / MEMBER LOOKUP & FINE MANAGEMENT -->
+    <section id="librarian-lookup-section" class="page-section">
+      <div class="section-header">
+        <div>
+          <span class="sub-heading">PATRON AUDIT & FINE DISPOSITION</span>
+          <h2 class="section-title">Student Account Lookup</h2>
+          <span class="user-subid">Inspect student borrow records, overdue penalties, and execute fine payment or waiver</span>
+        </div>
+      </div>
+
+      <!-- Search Box for Registration Number (user_id in db) -->
+      <div class="panel-box search-panel">
+        <form id="form-student-lookup" onsubmit="handleStudentLookupSubmit(event)">
+          <div class="lookup-input-bar">
+            <div class="form-group grow-2">
+              <label for="lookup-reg-no">Enter Registration Number of Student (user_id in DB) *</label>
+              <input type="text" id="lookup-reg-no" class="form-control" placeholder="e.g. 24BDS0245, 24BDS1016, 24BME1024..." required>
+              <span class="input-hint">Unique student identifier matching users.user_id in MongoDB</span>
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-lookup-student">Lookup Student</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Result Container (Hidden until search) -->
+      <div id="student-lookup-results" style="display: none;">
+        <!-- Student Info Strip -->
+        <div class="patron-summary-card">
+          <div class="patron-avatar">ID</div>
+          <div class="patron-info-grid">
+            <div class="info-item">
+              <span class="info-label">Student Name</span>
+              <span class="info-value" id="lookup-res-name">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Registration No (user_id)</span>
+              <span class="info-value green-text" id="lookup-res-id">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Department</span>
+              <span class="info-value" id="lookup-res-dept">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Email</span>
+              <span class="info-value" id="lookup-res-email">-</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Books Currently Issued</span>
+              <span class="info-value" id="lookup-res-borrows">0</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Total Outstanding Fine</span>
+              <span class="info-value orange-text" id="lookup-res-fine">₹ 0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 1: Books Issued (Not Returned) with Fine per Book & Pay / Waive options -->
+        <div class="panel-box">
+          <div class="panel-header">
+            <div>
+              <h3 class="panel-title">Books Issued (Not Returned) & Overdue Fine Assessment</h3>
+              <span class="panel-sub">Inspect non-returned books and process fine payments or administrative waivers against each record</span>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table" id="table-lookup-issued">
+              <thead>
+                <tr>
+                  <th>Book Title</th>
+                  <th>Barcode</th>
+                  <th>Issued Date</th>
+                  <th>Due Date</th>
+                  <th>Loan Status</th>
+                  <th>Fine Due</th>
+                  <th>Librarian Actions</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-lookup-issued">
+                <tr>
+                  <td colspan="7" class="empty-state">No non-returned books.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Section 2: Books Returned History -->
+        <div class="panel-box">
+          <div class="panel-header">
+            <h3 class="panel-title">Completed Loans (Books Returned)</h3>
+            <span class="panel-sub">Historical record of previously returned titles</span>
+          </div>
+
+          <div class="table-container">
+            <table class="data-table" id="table-lookup-returned">
+              <thead>
+                <tr>
+                  <th>Book Title</th>
+                  <th>Barcode</th>
+                  <th>Issued Date</th>
+                  <th>Return Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="tbody-lookup-returned">
+                <tr>
+                  <td colspan="5" class="empty-state">No returned books recorded.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 8. LIBRARIAN REQUESTS MANAGEMENT PAGE -->
+    <section id="librarian-requests-section" class="page-section">
+      <div class="section-header">
+        <div>
+          <span class="sub-heading">ACQUISITIONS & RESERVATIONS</span>
+          <h2 class="section-title">Manage Patron Book Requests</h2>
+          <span class="user-subid">Review requisitions submitted by students and faculty, then approve or reject</span>
+        </div>
+        <div class="header-action-group">
+          <button class="btn btn-outline" onclick="loadLibrarianRequests()">Refresh Requests</button>
+        </div>
+      </div>
+
+      <div class="panel-box">
+        <div class="panel-header">
+          <h3 class="panel-title">All Requisition Submissions</h3>
+          <span class="panel-sub" id="lib-reqs-count-label">Loading requests...</span>
+        </div>
+
+        <div class="table-container">
+          <table class="data-table" id="table-librarian-requests">
+            <thead>
+              <tr>
+                <th>Request ID</th>
+                <th>Title & Author</th>
+                <th>Requested By</th>
+                <th>Type & Priority</th>
+                <th>Request Date</th>
+                <th>Details / Notes</th>
+                <th>Status</th>
+                <th>Decision Action</th>
+              </tr>
+            </thead>
+            <tbody id="tbody-librarian-requests">
+              <tr>
+                <td colspan="8" class="empty-state">Loading requisitions...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div class="footer-left">
+        <span class="footer-monogram">DBMS // LMS</span>
+        <span>Institutional Database Management System</span>
+      </div>
+      <div class="footer-right">
+        <span>Connected to Replica Set <code>rs0</code></span>
+        <span>Database: <code>library_db</code></span>
+      </div>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
